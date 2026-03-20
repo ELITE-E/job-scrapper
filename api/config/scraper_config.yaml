@@ -1,0 +1,53 @@
+global:
+  delay_between_sites:5
+  description_format: "markdown"
+  hours_old:72
+  results_wanted:50
+
+retry:
+  max_attempts:3
+  wait_multiplier:2
+  wait_min:4
+  wait_max:30
+
+sites:
+  - name : "indeed"
+      enabled:true
+      search_terms:
+        - backend engineer
+        - python developer
+        - react developer
+
+    locations:
+         - name: "United States"
+         country_indeed: "USA"
+
+         - name: "Kenya"
+          country_indeed: "KEN"
+
+         - name: "Remote"
+    job_type: null
+    is_remote: null           
+    proxies: []  
+    delay_between_searches:3
+
+  - name: "linkedin"
+    enabled:true
+    search_terms:
+        - sofware engineer
+        - devops engineer
+    locations:
+      - name: "United States"
+        country_linkedin: "USA"
+
+      - name: "Kenya"
+        country_linkedin: "KEN"
+
+      - name: "Japan"
+        country_linkedin: "JPN"
+         
+      - name: "Remote"
+    results_wanted:25
+    linkedin_fetch_description: true
+    proxies: []
+    delay_between_searches:10
