@@ -6,7 +6,7 @@ from .base import Base
 from .mixins import UUIDPrimaryKeyMixin,TimestampMixin
 
 from sqlalchemy import String,Text,Numeric
-from sqlalchemy.orm import mapped_column,Mapped,relationship
+from sqlalchemy.orm import mapped_column,Mapped
 
 class ScrapeLogs(Base,
                  UUIDPrimaryKeyMixin,

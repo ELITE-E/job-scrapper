@@ -7,3 +7,4 @@ python-dotenv
 python-jobspy
 tenacity 
 pyyaml
+pandas
