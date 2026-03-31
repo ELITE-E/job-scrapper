@@ -2,6 +2,8 @@ import yaml
 from pydantic import BaseModel,Field,field_validator
 from typing import List,Optional
 
+
+
 class RetryingConfig(BaseModel):
     max_attempt:int = 3
     wait_multiplier:int = 2
@@ -57,6 +59,8 @@ class ScrapperConfig(BaseModel):
     retry:RetryingConfig
     sites:List[SiteConfig]
 
-
+def load_yaml(path: str)->ScrapperConfig:
+    with open(path,"r") as f:
+        data = yaml.safe_load(f)
 
 

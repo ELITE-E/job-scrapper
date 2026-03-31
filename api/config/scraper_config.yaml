@@ -12,18 +12,18 @@ retry:
 
 sites:
   - name : "indeed"
-      enabled:true
-      search_terms:
+    enabled: true
+    search_terms:
         - backend engineer
         - python developer
         - react developer
 
     locations:
          - name: "United States"
-         country_indeed: "USA"
+           country_indeed: "USA"
 
          - name: "Kenya"
-          country_indeed: "KEN"
+           country_indeed: "KEN"
 
          - name: "Remote"
     job_type: null
@@ -32,7 +32,7 @@ sites:
     delay_between_searches:3
 
   - name: "linkedin"
-    enabled:true
+    enabled: true
     search_terms:
         - sofware engineer
         - devops engineer
@@ -47,7 +47,12 @@ sites:
         country_linkedin: "JPN"
          
       - name: "Remote"
-    results_wanted:25
+    results_wanted: 25
     linkedin_fetch_description: true
     proxies: []
-    delay_between_searches:10
+    delay_between_searches: 10
+
+  - name: "zip_recruiter"
+    enabled: true
+    results_wanted: 50
+   

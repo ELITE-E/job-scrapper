@@ -4,7 +4,7 @@ alembic
 pydantic 
 pydantic-settings 
 python-dotenv
-python-jobspy
+#python-jobspy
 tenacity 
 pyyaml
 pandas

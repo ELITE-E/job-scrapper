@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import List
 
-from .config import load_config
+from .config import load_yaml
 from .base import ScrapeResult,BaseScrapper
 from app.database import  async_session_maker as async_session_factory
 
@@ -11,7 +11,7 @@ logger.setLevel(logging.INFO)
 
 async def run_full_scrape(config_path:str="config/scaper_config.yaml")->List[ScrapeResult]:
 
-    config=load_config(config_path)
+    config=load_yaml(config_path)
 
     results:List[ScrapeResult]=[]
 
