@@ -74,7 +74,7 @@ def transform_dataframe(df:pd.DataFrame)->List[ScrapedJob]:
 
                 continue
             job_url=row["job_url"]
-            job_url_hash=hashlib.sha256(job_url.encode()).hexdigest
+            job_url_hash=hashlib.sha256(job_url.encode()).hexdigest()
 
             company = None
             if row.get("company"):

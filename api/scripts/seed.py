@@ -17,7 +17,6 @@ SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
 
-
 CATEGORIES = [
     {"name": "Backend Engineering", "slug": "backend"},
     {"name": "Frontend Engineering", "slug": "frontend"},
