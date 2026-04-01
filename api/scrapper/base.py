@@ -9,6 +9,9 @@ import pandas as pd
 from tenacity import Retrying,stop_after_attempt,wait_exponential,retry_if_exception_type,before_log,after_log
 
 from .schemas import ScrapedJob
+from .validator import validate_batch
+
+
 class ScrapeResult:
     def __init__(self,site:str,total_terms:int,total_new:int):
         self.site=site
@@ -66,10 +69,14 @@ class BaseScrapper:
                     #self.logger.info(f"No results for term: {term}")
                     continue
                 #Transform
-                jobs=self.transform(df)
+                transformed=self._transform(df)
 
+                #Validation Report 
+                valid_jobs ,report =validate_batch(transformed)
+                 
+                self.logger.info(report.model_dump())
                 #Deduplicate
-                jobs=await self._deduplicate(jobs)
+                jobs=await self._deduplicate(valid_jobs)
 
                 if not jobs:
                     #self.logger.info(f"No job after deduplication for term: {term} ")
