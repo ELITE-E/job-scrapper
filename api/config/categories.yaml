@@ -1,0 +1,169 @@
+settings:
+  title_weight_multiplier: 3.0
+  min_score_threshold: 2.0
+  default_category: "other"
+
+categories:
+  - name: "Backend Engineering"
+    slug: "backend"
+    description: "Server-side development, APIs, databases"
+    keywords:
+      - { term: "backend", weight: 2.0 }
+      - { term: "api", weight: 1.5 }
+      - { term: "python", weight: 1.0 }
+      - { term: "java", weight: 1.0 }
+      - { term: "golang", weight: 1.5 }
+      - { term: "django", weight: 1.5 }
+      - { term: "flask", weight: 1.5 }
+      - { term: "spring boot", weight: 1.5 }
+      - { term: "microservices", weight: 1.5 }
+      - { term: "node.js", weight: 1.0 }
+    title_keywords:
+      - "backend"
+      - "api"
+      - "server"
+
+  - name: "Frontend Engineering"
+    slug: "frontend"
+    description: "Client-side and UI development"
+    keywords:
+      - { term: "frontend", weight: 2.0 }
+      - { term: "react", weight: 1.5 }
+      - { term: "vue", weight: 1.5 }
+      - { term: "angular", weight: 1.5 }
+      - { term: "javascript", weight: 1.0 }
+      - { term: "typescript", weight: 1.0 }
+      - { term: "css", weight: 1.0 }
+      - { term: "html", weight: 0.5 }
+      - { term: "next.js", weight: 1.5 }
+    title_keywords:
+      - "frontend"
+      - "ui"
+      - "web"
+
+  - name: "Full Stack Development"
+    slug: "fullstack"
+    description: "Frontend + Backend combined roles"
+    keywords:
+      - { term: "full stack", weight: 3.0 }
+      - { term: "fullstack", weight: 3.0 }
+      - { term: "full-stack", weight: 3.0 }
+    title_keywords:
+      - "fullstack"
+
+  - name: "Data Engineering"
+    slug: "data-engineering"
+    description: "Data pipelines, ETL, big data systems"
+    keywords:
+      - { term: "etl", weight: 2.0 }
+      - { term: "data pipeline", weight: 2.0 }
+      - { term: "spark", weight: 1.5 }
+      - { term: "hadoop", weight: 1.5 }
+      - { term: "airflow", weight: 2.0 }
+      - { term: "data warehouse", weight: 1.5 }
+    title_keywords:
+      - "data engineer"
+
+  - name: "Data Science / ML"
+    slug: "data-science"
+    description: "Machine learning, AI, analytics"
+    keywords:
+      - { term: "machine learning", weight: 2.0 }
+      - { term: "ai", weight: 1.5 }
+      - { term: "deep learning", weight: 2.0 }
+      - { term: "pandas", weight: 1.0 }
+      - { term: "numpy", weight: 1.0 }
+      - { term: "tensorflow", weight: 1.5 }
+    title_keywords:
+      - "data scientist"
+      - "ml"
+
+  - name: "DevOps / SRE"
+    slug: "devops"
+    description: "Infrastructure, CI/CD, reliability"
+    keywords:
+      - { term: "devops", weight: 2.0 }
+      - { term: "docker", weight: 1.5 }
+      - { term: "kubernetes", weight: 2.0 }
+      - { term: "ci/cd", weight: 1.5 }
+      - { term: "terraform", weight: 1.5 }
+      - { term: "aws", weight: 1.0 }
+    title_keywords:
+      - "devops"
+      - "sre"
+
+  - name: "Mobile Development"
+    slug: "mobile"
+    description: "iOS, Android, cross-platform"
+    keywords:
+      - { term: "android", weight: 1.5 }
+      - { term: "ios", weight: 1.5 }
+      - { term: "react native", weight: 2.0 }
+      - { term: "flutter", weight: 2.0 }
+      - { term: "kotlin", weight: 1.0 }
+      - { term: "swift", weight: 1.0 }
+    title_keywords:
+      - "mobile"
+
+  - name: "QA / Testing"
+    slug: "qa"
+    description: "Quality assurance and testing"
+    keywords:
+      - { term: "qa", weight: 2.0 }
+      - { term: "testing", weight: 1.5 }
+      - { term: "automation testing", weight: 2.0 }
+      - { term: "selenium", weight: 1.5 }
+    title_keywords:
+      - "qa"
+      - "tester"
+
+  - name: "Security"
+    slug: "security"
+    description: "Cybersecurity and AppSec"
+    keywords:
+      - { term: "security", weight: 2.0 }
+      - { term: "cybersecurity", weight: 2.0 }
+      - { term: "penetration testing", weight: 2.0 }
+      - { term: "appsec", weight: 2.0 }
+    title_keywords:
+      - "security"
+
+  - name: "Cloud / Platform"
+    slug: "cloud"
+    description: "Cloud and platform engineering"
+    keywords:
+      - { term: "cloud", weight: 2.0 }
+      - { term: "aws", weight: 1.5 }
+      - { term: "gcp", weight: 1.5 }
+      - { term: "azure", weight: 1.5 }
+    title_keywords:
+      - "cloud"
+
+  - name: "Product / Design"
+    slug: "product"
+    description: "Product management and UX/UI"
+    keywords:
+      - { term: "product manager", weight: 2.0 }
+      - { term: "ux", weight: 1.5 }
+      - { term: "ui", weight: 1.5 }
+      - { term: "figma", weight: 1.0 }
+    title_keywords:
+      - "product"
+      - "designer"
+
+  - name: "Management / Leadership"
+    slug: "management"
+    description: "Leadership roles"
+    keywords:
+      - { term: "manager", weight: 2.0 }
+      - { term: "director", weight: 2.0 }
+      - { term: "lead", weight: 1.5 }
+    title_keywords:
+      - "manager"
+      - "lead"
+
+  - name: "Other"
+    slug: "other"
+    description: "Fallback category"
+    keywords: []
+    title_keywords: []

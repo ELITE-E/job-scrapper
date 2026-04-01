@@ -1,4 +1,5 @@
 import yaml
+from pathlib import Path
 from pydantic import BaseModel,Field,field_validator
 from typing import List,Optional
 
@@ -60,7 +61,10 @@ class ScrapperConfig(BaseModel):
     sites:List[SiteConfig]
 
 def load_yaml(path: str)->ScrapperConfig:
-    with open(path,"r") as f:
+    base_dir = Path(__file__).resolve.parent.parent
+    full_path = base_dir / path
+    
+    with open(full_path,"r") as f:
         data = yaml.safe_load(f)
 
 
