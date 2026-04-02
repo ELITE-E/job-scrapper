@@ -10,6 +10,7 @@ from tenacity import Retrying,stop_after_attempt,wait_exponential,retry_if_excep
 
 from .schemas import ScrapedJob
 from .validator import validate_batch
+from .categorizer import JobCategorizer
 
 
 class ScrapeResult:
@@ -82,8 +83,11 @@ class BaseScrapper:
                     #self.logger.info(f"No job after deduplication for term: {term} ")
                     continue
 
+                #Categorize
+                categorized = JobCategorizer.categorize_batch(jobs)
+
                 #Persist
-                new_count,_=await self._persist(jobs)
+                new_count,_=await self._persist(categorized)
                 total_new_jobs +=new_count
 
                 self.logger.info(f"{new_count} new jobs stored for term:{term}.")

@@ -4,7 +4,7 @@ from typing import List
 
 from .config import load_yaml
 from .base import ScrapeResult,BaseScrapper
-from app.database import  async_session_maker as async_session_factory
+from ..database import async_session_maker as async_session_factory
 
 logger=logging.getLogger("scraper.orcherstrator")
 logger.setLevel(logging.INFO)

@@ -1,14 +1,17 @@
 import uuid
 from typing import List ,Tuple
+import logging
+
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company import Company
-from app.models.job import Job
+from ..models.company import Company
+from ..models import Job, Category
 
-from scrapper.schemas import ScrapedJob,ScrapedCompany
+from api.app.scrapper.schemas import ScrapedJob,ScrapedCompany
 
+logger = logging.getLogger(__name__)
 
 async def find_or_create_company(
         company_data:ScrapedCompany,
@@ -74,8 +77,13 @@ async def persist_jobs(
     new_count= 0
     updated_count = 0
 
+
     try:
+        result= await session.execute(select(Category.id,Category.slug))
+        category_map = {slug:id for id,slug in result.all()}
+
         for job in jobs:
+
         #Resolve company FK
             company_id = None
             if job.company:
@@ -107,6 +115,17 @@ async def persist_jobs(
                 company_id=company_id,
 
         )
+            
+            #Category resolution
+            if job.category_slug:
+                category_id = category_map.get(job.category_slug)
+
+                if category_id:
+                    db_job.category_id = category_id
+                else:
+                    logger.warning(
+                        f"Unknown category slug : {job.category_slug}"
+                    )
             new_jobs.append(db_job)
 
         #Bulk insert
