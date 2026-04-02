@@ -3,27 +3,16 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
-from app.config import settings
-
-from app.models.category import Category
-from app.models.company import Company
-from app.models.job import Job
-
+from api.app.config import settings
+from api.app.models import Category, Company, Job, JobCategoryKeyword
+from api.app.database import async_session_maker
+from api.app.scrapper.categorizer import load_categorizer_config
 
 DATABASE_URL = settings.get_db_url()
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
-
-
-CATEGORIES = [
-    {"name": "Backend Engineering", "slug": "backend"},
-    {"name": "Frontend Engineering", "slug": "frontend"},
-    {"name": "Data Engineering", "slug": "data"},
-    {"name": "DevOps", "slug": "devops"},
-    {"name": "Full Stack", "slug": "fullstack"},
-]
 
 COMPANIES = [
     {"name": "Acme Corp"},
@@ -59,11 +48,35 @@ JOBS = [
 
 
 async def seed_categories(session):
-    for cat in CATEGORIES:
-        stmt = insert(Category).values(**cat).on_conflict_do_nothing(
-            index_elements=["slug"]
-        )
-        await session.execute(stmt)
+    config = load_categorizer_config()
+    async with async_session_maker as session:
+        result = await session.execute(select(Category))
+
+        existing_categories = {
+            cat.slug: cat for cat in result.scalars().all()
+        }
+        for cat in config.categories:
+            
+            if cat.slug in existing_categories:
+                db_category = existing_categories[cat.slug]
+            else:
+                db_category = Category(
+                name = cat.name,
+                slug = cat.slug,
+                description = cat.description
+            )
+            session.add(db_category)
+            await session.flush()
+
+        for kw in cat.keywords:
+            keyword = JobCategoryKeyword(
+                category_id = db_category.id,
+                term = kw.term,
+                weight = kw.weight,
+            )
+            session.add(keyword)
+
+    await session.commit()
 
 
 async def seed_companies(session):
