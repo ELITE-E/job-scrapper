@@ -1,52 +1,42 @@
 global:
-  delay_between_sites:5
+  delay_between_sites: 5
   description_format: "markdown"
-  hours_old:72
-  results_wanted:50
+  hours_old: 72
+  results_wanted: 50
 
 retry:
-  max_attempts:3
-  wait_multiplier:2
-  wait_min:4
-  wait_max:30
+  max_attempts: 3
+  wait_multiplier: 2
+  wait_min: 4
+  wait_max: 30
 
 sites:
-  - name : "indeed"
+  - name: "indeed"
     enabled: true
     search_terms:
-        - backend engineer
-        - python developer
-        - react developer
+      - backend engineer
+      - python developer
+      - react developer
 
     locations:
-         - name: "United States"
-           country_indeed: "USA"
-
-         - name: "Kenya"
-           country_indeed: "KEN"
-
-         - name: "Remote"
+      - { name: "United States", code: "USA" }
+      - { name: "Kenya", code: "KEN" }
+      - name: "Remote"
     job_type: null
-    is_remote: null           
-    proxies: []  
-    delay_between_searches:3
+    is_remote: null
+    proxies: []
+    delay_between_searches: 3
 
   - name: "linkedin"
     enabled: true
     search_terms:
-        - sofware engineer
-        - devops engineer
-    locations:
-      - name: "United States"
-        country_linkedin: "USA"
-
-      - name: "Kenya"
-        country_linkedin: "KEN"
-
-      - name: "Japan"
-        country_linkedin: "JPN"
-         
-      - name: "Remote"
+      - software engineer
+      - devops engineer
+    location:
+      - { name: "United States", code: "USA" }
+      - { name: "Kenya", code: "KEN" }
+      - { name: "Japan", code: "JPN" }
+      - { name: "Remote", code: "" }
     results_wanted: 25
     linkedin_fetch_description: true
     proxies: []
@@ -54,5 +44,24 @@ sites:
 
   - name: "zip_recruiter"
     enabled: true
+    search_terms:
+      - software engineer
+      - devops engineer
+      - data engineer
+    location:
+      - { name: "United States", code: "USA" }
+      - { name: "Kenya", code: "KEN" }
+      - { name: "Japan", code: "JPN" }
     results_wanted: 50
-   
+
+  - name: "glassdoor"
+    enabled: true
+    search_terms:
+      - "backend developer"
+      - "data engineer"
+      - "machine learning engineer"
+    location:
+      - { name: "South Africa", code: "ZAF" }
+      - { name: "Australia", code: "AUS" }
+    results_wanted: 40
+    delay_between_searches: 7

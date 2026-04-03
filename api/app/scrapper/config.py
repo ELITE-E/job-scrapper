@@ -4,9 +4,11 @@ from pydantic import BaseModel,Field,field_validator
 from typing import List,Optional
 
 
-
+class LocationConfig(BaseModel):
+    name:str
+    code: str
 class RetryingConfig(BaseModel):
-    max_attempt:int = 3
+    max_attempts:int = 3
     wait_multiplier:int = 2
     wait_min:int = 4
     wait_max:int = 30
@@ -35,7 +37,7 @@ class SiteConfig(BaseModel):
     enabled:bool = True
     search_terms:List[str]
 
-    location:str
+    location:List[LocationConfig] = Field(default_factory=list)
     results_wanted:Optional[int] = None
     hours_old:Optional[int] =None
 
@@ -61,10 +63,12 @@ class ScrapperConfig(BaseModel):
     sites:List[SiteConfig]
 
 def load_yaml(path: str)->ScrapperConfig:
-    base_dir = Path(__file__).resolve.parent.parent
+    base_dir = Path(__file__).resolve().parent.parent.parent
     full_path = base_dir / path
-    
+    print(f"DEBUG: Looking for config at: {full_path}")
     with open(full_path,"r") as f:
         data = yaml.safe_load(f)
+
+    return ScrapperConfig(**data)
 
 

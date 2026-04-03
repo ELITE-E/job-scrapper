@@ -1,17 +1,20 @@
 import yaml 
 import re
 from pathlib import Path
-from pydantic import List,Tuple,Any,Dict
+from typing import List,Tuple,Dict
 from .schemas import CategorizerConfig,ScrapedJob
 
 def load_categorizer_config(path:str ="config/categories.yaml")->CategorizerConfig:
-   base_dir = Path(__file__).resolve().parent.parent
+   
+   base_dir = Path(__file__).resolve().parent.parent.parent
    full_path = base_dir /path
 
    with open(full_path,"r") as f:
       data = yaml.safe_load(f)
 
-      return CategorizerConfig(**data)
+   return CategorizerConfig(**data)
+
+
    
 class JobCategorizer():
    def __init__(self,config:CategorizerConfig):
@@ -40,30 +43,30 @@ class JobCategorizer():
       for slug,patterns in self.category_patterns.items():
          score = 0.0
 
-      for pattern,weight in patterns:
-         #Titel match 
-         if pattern.search(title_lower):
-            score+=weight * self.settings.title_weight_multiplier
+         for pattern,weight in patterns:
+            #Titel match 
+            if pattern.search(title_lower):
+               score+=weight * self.settings.title_weight_multiplier
 
-        #Description match
-         if pattern.search(description_lower):
-            score+=weight 
+           #Description match
+            if pattern.search(description_lower):
+               score+=weight 
 
          scores[slug] = score
 
-         #Find best category
-         best_slug = None
-         best_score = 0.0
+      #Find best category
+      best_slug = None
+      best_score = 0.0
 
-         for slug,score in scores.items():
-            if score > best_score:
-               best_score = score
-               best_slug = slug
-         #Apply threshold
-         if best_slug and best_score >= self.settings.min_score_threshold:
-            return best_slug
+      for slug,score in scores.items():
+               if score > best_score:
+                  best_score = score
+                  best_slug = slug
+            #Apply threshold
+      if best_slug and best_score >= self.settings.min_score_threshold:
+         return best_slug
          
-         return self.settings.default_category
+      return self.settings.default_category
       
    def categorize_batch(self,jobs:List[ScrapedJob]) ->List[ScrapedJob]:
       for job in jobs:

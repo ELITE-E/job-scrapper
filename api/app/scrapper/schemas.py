@@ -1,8 +1,18 @@
+import re
 from pydantic import ConfigDict,BaseModel,model_validator
 from pydantic import Field,field_validator,model_validator
 from datetime import date,timedelta
 from typing import Optional,List,Dict
 from decimal import Decimal
+
+ALLOWED_SITES = {
+            "indeed",
+            "linkedin",
+            "zip_recruiter",
+            "glassdoor",
+            "google"
+        }
+
 class ScrapedCompany(BaseModel):
     name:str
     url:Optional[str] =None
@@ -89,14 +99,13 @@ class ScrapedJob(BaseModel):
         return v
     #Salary validation
     @model_validator(mode="after")
-    @classmethod
     def validate_salary_range(self):
         if self.salary_min is not None and self.salary_max is not None:
             if self.salary_min > self.salary_max:
                 #Swap instead of error :usefule when sites flip ranges
                 #self.salary_min,self.salary_max =self.salary_max,self.salary_min
                 raise ValueError("salary_min must be less than salary_max")
-            return self
+        return self
         
     #site validator
     @field_validator("source_site",mode="before")
@@ -105,18 +114,14 @@ class ScrapedJob(BaseModel):
         if not isinstance(v,str):
             raise TypeError("source_site must be a string ")
         
-        v = v.strip().lower().replace("","_")
+        v_str = str(v).strip().lower()
+        cleaned = re.sub(r"[\s\-]+", "_", v_str)
+        print(v)
 
-        allowed = {
-            "indeed",
-            "linkedin",
-            "zip_recruiter",
-            "glassdoor",
-            "google"
-        }
-
-        if v not in allowed:
-            raise ValueError(f"source_site must be one of {allowed}")
+        if cleaned not in ALLOWED_SITES:
+            print(f"BUG:'{cleaned}' not in {ALLOWED_SITES}")
+            raise ValueError(f"source_site must be one of {ALLOWED_SITES}")
+        return cleaned
         
 class ScrapeResult(BaseModel):
     site_name: str
