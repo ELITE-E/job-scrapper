@@ -4,7 +4,7 @@ from typing import List
 
 from .config import load_yaml
 from .base import ScrapeResult,BaseScrapper
-from ..database import async_session_maker as async_session_factory
+from app.database import async_session_maker as async_session_factory
 
 logger=logging.getLogger("scraper.orcherstrator")
 logger.setLevel(logging.INFO)
@@ -24,7 +24,8 @@ async def run_full_scrape(config_path:str="config/scaper_config.yaml")->List[Scr
         scraper=BaseScrapper(
             site_config=site,
             global_config=config.global_,
-            session_factory=async_session_factory
+            session_factory=async_session_factory,
+            retry_config = config.retry,
         )
 
         result =await scraper.run()

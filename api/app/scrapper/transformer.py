@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from pydantic import ValidationError
 
-from api.app.scrapper.schemas import ScrapedJob,ScrapedCompany
+from app.scrapper.schemas import ScrapedJob,ScrapedCompany
 
 logger = logging.getLogger("scrapper.transformer")
 

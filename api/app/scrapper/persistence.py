@@ -6,10 +6,9 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.company import Company
-from ..models import Job, Category
+from app.models import Job, Category,Company
 
-from api.app.scrapper.schemas import ScrapedJob,ScrapedCompany
+from app.scrapper.schemas import ScrapedJob,ScrapedCompany
 
 logger = logging.getLogger(__name__)
 

@@ -4,8 +4,8 @@ from typing import List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.job import Job
-from api.app.scrapper.schemas import ScrapedJob
+from app.models.job import Job
+from app.scrapper.schemas import ScrapedJob
 
 def compute_hash(job_url:str)->str:
     return hashlib.sha256(job_url.encode()).hexdigest

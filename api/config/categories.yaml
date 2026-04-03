@@ -14,6 +14,7 @@ categories:
       - { term: "java", weight: 1.0 }
       - { term: "golang", weight: 1.5 }
       - { term: "django", weight: 1.5 }
+      - { term: "fastapi", weight: 1.5 }
       - { term: "flask", weight: 1.5 }
       - { term: "spring boot", weight: 1.5 }
       - { term: "microservices", weight: 1.5 }
@@ -74,6 +75,8 @@ categories:
       - { term: "pandas", weight: 1.0 }
       - { term: "numpy", weight: 1.0 }
       - { term: "tensorflow", weight: 1.5 }
+      - { term: "pytorch", weight: 1.5 }
+      - { term: "scikitlearn", weight: 1.5 }
     title_keywords:
       - "data scientist"
       - "ml"

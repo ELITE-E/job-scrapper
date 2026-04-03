@@ -10,7 +10,8 @@ from tenacity import Retrying,stop_after_attempt,wait_exponential,retry_if_excep
 
 from .schemas import ScrapedJob
 from .validator import validate_batch
-from .categorizer import JobCategorizer
+from .categorizer import JobCategorizer,load_categorizer_config
+
 
 
 class ScrapeResult:
@@ -31,7 +32,8 @@ class BaseScrapper:
         self.site_config=site_config
         self.global_config=global_config
         self.session_factory=session_factory
-
+        
+        self.categorizer = JobCategorizer(load_categorizer_config())
         self.retry_config=retry_config
 
         self.logger=logging.getLogger(f"scrapper.{site_config.name}")
@@ -62,32 +64,35 @@ class BaseScrapper:
             self.logger.info(f"Starting scrape for term:{term}")
 
             try:
-                #Fetch
+                #1.Fetch
+
                 #df=self._fetch(term)
                 df=retryer(self._fetch,term)
 
                 if df.empty:
                     #self.logger.info(f"No results for term: {term}")
                     continue
-                #Transform
-                transformed=self._transform(df)
 
-                #Validation Report 
-                valid_jobs ,report =validate_batch(transformed)
+                #2.Transform
+                transformed_jobs=self._transform(df)
+
+                #3.Validate(Reporting)
+                valid_jobs ,report =validate_batch(transformed_jobs)
                  
                 self.logger.info(report.model_dump())
-                #Deduplicate
-                jobs=await self._deduplicate(valid_jobs)
 
-                if not jobs:
+                #4.Deduplicate
+                deduped_jobs=await self._deduplicate(valid_jobs)
+
+                if not deduped_jobs:
                     #self.logger.info(f"No job after deduplication for term: {term} ")
                     continue
 
-                #Categorize
-                categorized = JobCategorizer.categorize_batch(jobs)
+                #5.Categorize
+                categorized_jobs = self.categorizer.categorize_batch(deduped_jobs)
 
-                #Persist
-                new_count,_=await self._persist(categorized)
+                #6.Persist
+                new_count,_=await self._persist(categorized_jobs)
                 total_new_jobs +=new_count
 
                 self.logger.info(f"{new_count} new jobs stored for term:{term}.")
