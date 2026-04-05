@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from typing import List,Tuple
+import time
 
 from jobspy import scrape_jobs
 from .config import GlobalConfig,SiteConfig
@@ -8,17 +9,11 @@ import pandas as pd
 
 from tenacity import Retrying,stop_after_attempt,wait_exponential,retry_if_exception_type,before_log,after_log
 
-from .schemas import ScrapedJob
+from .schemas import ScrapedJob,ScrapeResult
 from .validator import validate_batch
 from .categorizer import JobCategorizer,load_categorizer_config
 
 
-
-class ScrapeResult:
-    def __init__(self,site:str,total_terms:int,total_new:int):
-        self.site=site
-        self.total_terms=total_terms
-        self.total_new=total_new
 
 class BaseScrapper:
 
@@ -56,68 +51,87 @@ class BaseScrapper:
 
     async def run(self)->ScrapeResult:
         total_new_jobs=0
+        total_found_jobs = 0
         errors=[]
+        start_time = time.time()
 
         retryer = self._build_retryer()
 
-        for term in self.site_config.search_terms:
-            self.logger.info(f"Starting scrape for term:{term}")
+        for loc_config in self.site_config.location:
+            current_location = loc_config.name
+            self.logger.info(f"Switching to location : {current_location}")
 
-            try:
-                #1.Fetch
+            for term in self.site_config.search_terms:
+                self.logger.info(f"Starting scrape for term | Location : Term:{term} | Location: {current_location}")
+    
+                try:
+                    #1.Fetch
 
-                #df=self._fetch(term)
-                df=retryer(self._fetch,term)
+                    #df=self._fetch(term)
+                    df=retryer(self._fetch,term,current_location)
 
-                if df.empty:
-                    #self.logger.info(f"No results for term: {term}")
-                    continue
+                    if df is None or df.empty:
+                        self.logger.warning(f"No data returned for term: {term}")
+                        continue
+                    total_found_jobs+=len(df)
 
-                #2.Transform
-                transformed_jobs=self._transform(df)
+                    #2.Transform
+                    transformed_dataframe=self._transform(df)
 
-                #3.Validate(Reporting)
-                valid_jobs ,report =validate_batch(transformed_jobs)
+                    #3.Validate(Reporting)
+                    valid_jobs ,report =validate_batch(transformed_dataframe)
                  
-                self.logger.info(report.model_dump())
+                    self.logger.info(report.model_dump())
 
-                #4.Deduplicate
-                deduped_jobs=await self._deduplicate(valid_jobs)
+                    #4.Deduplicate
+                    deduped_jobs=await self._deduplicate(valid_jobs)
 
-                if not deduped_jobs:
-                    #self.logger.info(f"No job after deduplication for term: {term} ")
-                    continue
+                    if not deduped_jobs:
+                        #self.logger.info(f"No job after deduplication for term: {term} ")
+                        continue
 
-                #5.Categorize
-                categorized_jobs = self.categorizer.categorize_batch(deduped_jobs)
+                    #5.Categorize
+                    categorized_jobs = self.categorizer.categorize_batch(deduped_jobs)
 
-                #6.Persist
-                new_count,_=await self._persist(categorized_jobs)
-                total_new_jobs +=new_count
+                    #6.Persist
+                    new_count,_=await self._persist(categorized_jobs)
+                    total_new_jobs +=new_count
 
-                self.logger.info(f"{new_count} new jobs stored for term:{term}.")
+                    self.logger.info(f"{new_count} new jobs stored for term:{term}.")
 
-            except Exception as e:
-                self.logger.exception(f"Error processing term '{term}':{e}")
-            #Delay beetween terms
-            await asyncio.sleep(self.site_config.delay_beetween_searches)
+                except Exception as e:
+                  self.logger.exception(f"Error processing term '{term}':{e}")
+                #Delay beetween terms
+                await asyncio.sleep(self.site_config.delay_beetween_searches)
 
         return ScrapeResult(
-            site=self.site_config.name,
-            total_terms=len(self.site_config.search_terms),
-            total_new=total_new_jobs
+            site_name=self.site_config.name,
+            #search_terms=len(self.site_config.search_terms),
+            status="success" if not errors else 'partial_failure',
+            jobs_found=total_found_jobs,
+            jobs_new=total_new_jobs,
+            jobs_updated= 0,
+            errors=errors,
+            duration_seconds= time.time() - start_time,
         )
 
 
 
-    def _fetch(self,search_term:str)->pd.DataFrame:
+    def _fetch(self,search_term:str,
+               location_str : str)->pd.DataFrame:
         try:
             self.logger.debug(f"Fetching jobs for term: {search_term}")
+
+            # Supported countries for Indeed in JobSpy (validated enum)
+            INDEED_SUPPORTED_COUNTRIES = {
+                "usa", "can", "gbr", "aus", "nld", "fra", "deu", 
+                "sgp", "are", "ind", "ire", "nzl", "phl", "mex", "bra"
+            }
 
             kwargs={
                  "site_name":self.site_config.name,
                  "search_term":search_term,
-                 "location":self.site_config.location,
+                 "location":location_str,
 
                  "results_wanted":self.site_config.results_wanted or self.global_config.results_wanted,
                  "hours_old":self.site_config.hours_old or self.global_config.hours_old,
@@ -126,14 +140,26 @@ class BaseScrapper:
                  "job_type":self.site_config.job_type,
                  "is_remote":self.site_config.is_remote,
                  "proxies":self.site_config.proxies or None,
-                 
-                 "country_indeed":self.site_config.country_indeed,
-                 "linkedin_fetch_description":self.site_config.linkedin_fetch_description,}
+                 "linkedin_fetch_description":getattr(self.site_config,"linkedin_fetch_description",False),
+                 }
+            
+            # Handle country_indeed with validation
+            country_indeed = getattr(self.site_config, "country_indeed", None)
+            if country_indeed:
+                country_code = country_indeed.lower()
+                if country_code in INDEED_SUPPORTED_COUNTRIES:
+                    kwargs["country_indeed"] = country_code
+                else:
+                    self.logger.warning(
+                        f"Country '{country_indeed}' not supported by Indeed. "
+                        f"Allowed: {INDEED_SUPPORTED_COUNTRIES}. "
+                        f"Falling back to location-only search in '{location_str}' "
+                        f"(search may be limited without country context)."
+                    )
             
             #Filter out None values
             kwargs={k:v for k,v in kwargs.items() if v is not None}      
 
-            #self.logger.debug(f"Fetching with params: {kwargs}")
             self.logger.debug(f"Fetching jobs for term:{search_term}")
 
             return scrape_jobs(**kwargs)
@@ -144,19 +170,19 @@ class BaseScrapper:
         
     
     def _transform(self,df:pd.DataFrame)->List[ScrapedJob]:
-        from .transformer import transform_jobs#lazy import fix to avoid circular import
+        from .transformer import transform_dataframe#lazy import fix to avoid circular import
 
-        return transform_jobs(df,self.site_config.name)
+        return transform_dataframe(df,self.site_config.name)
     
     async def _deduplicate(self,jobs:List[ScrapedJob])->List[ScrapedJob]:
         from .deduplicator import filter_new_jobs
 
         async with self.session_factory() as session:
-            return await filter_new_jobs(session,jobs)
+            return await filter_new_jobs(jobs, session)
         
     async def _persist(self,jobs:List[ScrapedJob])->Tuple[int,int]:
         from .persistence import persist_jobs
 
         async with self.session_factory() as session:
-            return await persist_jobs(session,jobs)
+            return await persist_jobs(jobs,session)
         

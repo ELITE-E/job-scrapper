@@ -1,9 +1,13 @@
 import re
+import logging
 from pydantic import ConfigDict,BaseModel,model_validator
 from pydantic import Field,field_validator,model_validator
 from datetime import date,timedelta
 from typing import Optional,List,Dict
 from decimal import Decimal
+import pandas as pd
+
+logger = logging.getLogger("scrapper.schemas")
 
 ALLOWED_SITES = {
             "indeed",
@@ -86,17 +90,54 @@ class ScrapedJob(BaseModel):
     #date_posted validator
     @field_validator("date_posted",mode="before")
     @classmethod
-    def validate_date(cls,v):
-        if v is  None :
-            return v
+    def validate_date(cls, v, info):
+        """
+        Validate and normalize date_posted field.
         
-        today =  date.today()
-        earliest =  today - timedelta(days=14)
-        latest = today + timedelta(days=1)
+        - Allows None values (jobs without posted dates)
+        - Accepts date objects directly
+        - Attempts to parse strings to dates
+        - Allows jobs up to 60 days old (for sponsored/archived jobs)
+        - Logs warnings instead of failing for edge cases
+        """
+        # Case 1: None is acceptable
+        if v is None:
+            return v
 
-        if not (earliest <= v <= latest):
-            raise ValueError("date_posted must be within range of 14 days and not into the furture")
-        return v
+        # Case 2: Already a date object
+        if isinstance(v, date):
+            parsed_date = v
+        # Case 3: String - try to parse it
+        elif isinstance(v, str):
+            try:
+                parsed_date = pd.to_datetime(v).date()
+            except Exception as e:
+                logger.warning(
+                    f"Could not parse date_posted '{v}' for job '{info.data.get('title', 'unknown')}'. "
+                    f"Setting to None. Error: {e}"
+                )
+                return None
+        else:
+            logger.warning(
+                f"Unexpected date_posted type: {type(v).__name__} for job "
+                f"'{info.data.get('title', 'unknown')}'. Setting to None."
+            )
+            return None
+
+        # Case 4: Validate date range (60-day window for sponsored/archived jobs)
+        today = date.today()
+        earliest = today - timedelta(days=60)  # Allow up to 60 days old
+        latest = today + timedelta(days=1)  # Don't allow future dates
+
+        if not (earliest <= parsed_date <= latest):
+            logger.warning(
+                f"Date '{parsed_date}' outside acceptable range ({earliest} to {latest}). "
+                f"Job: '{info.data.get('title', 'unknown')}'. Setting to None."
+            )
+            # Instead of rejecting, set to None so the job isn't discarded
+            return None
+
+        return parsed_date
     #Salary validation
     @model_validator(mode="after")
     def validate_salary_range(self):
@@ -125,7 +166,7 @@ class ScrapedJob(BaseModel):
         
 class ScrapeResult(BaseModel):
     site_name: str
-    search_term:Optional[str] = None
+    #search_terms:Optional[str] = None
     status: str 
 
     jobs_found: int = 0

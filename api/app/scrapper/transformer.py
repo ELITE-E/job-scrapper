@@ -34,7 +34,7 @@ def parse_date(value)->date | None:
     if not value :
         return  None
     try:
-        pd.to_datetime(value).date()
+        return pd.to_datetime(value).date()
     except Exception:
         return None
 
@@ -57,7 +57,7 @@ def normalize_bool(value)->bool:
     
     return False
 
-def transform_dataframe(df:pd.DataFrame)->List[ScrapedJob]:
+def transform_dataframe(df:pd.DataFrame,site_name:str)->List[ScrapedJob]:
     if df is None or df.empty:
         return []
     
