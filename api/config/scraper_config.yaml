@@ -11,21 +11,45 @@ retry:
   wait_max: 30
 
 sites:
-  - name: "indeed"
+  # --- INDEED KENYA CONFIG ---
+  - indeed_kenya:
+    name: "indeed"
     enabled: true
+    country_indeed: "kenya"
+    location:
+      - { name: "Nairobi", code: "NBO" }
+      - { name: "Mombasa", code: "MSA" }
+      - { name: "Remote", code: "REMOTE" }
     search_terms:
-      - backend engineer
-      - python developer
-      - react developer
-
-    locations:
-      - { name: "United States", code: "USA" }
-      - { name: "Kenya", code: "KEN" }
-      - name: "Remote"
+      - "backend engineer"
+      - "python developer"
+      - "react developer"
     job_type: null
     is_remote: null
+    results_wanted: 20
+    hours_old: 72
     proxies: []
-    delay_between_searches: 3
+    delay_between_searches: 10
+
+  # --- INDEED USA CONFIG ---
+  - indeed_usa:
+    name: "indeed"
+    enabled: true
+    country_indeed: "usa"
+    location:
+      - { name: "New York", code: "NY" }
+      - { name: "San Francisco", code: "CA" }
+      - { name: "Remote", code: "USA_REMOTE" }
+    search_terms:
+      - "backend engineer"
+      - "python developer"
+      - "react developer"
+    job_type: null
+    is_remote: null
+    results_wanted: 20
+    hours_old: 72
+    proxies: []
+    delay_between_searches: 10
 
   - name: "linkedin"
     enabled: true
@@ -34,13 +58,13 @@ sites:
       - devops engineer
     location:
       - { name: "United States", code: "USA" }
-      - { name: "Kenya", code: "KEN" }
+      - { name: "Nairobi", code: "KEN" }
       - { name: "Japan", code: "JPN" }
       - { name: "Remote", code: "" }
     results_wanted: 25
     linkedin_fetch_description: true
     proxies: []
-    delay_between_searches: 10
+    delay_between_searches: 25
 
   - name: "zip_recruiter"
     enabled: true
@@ -55,7 +79,7 @@ sites:
     results_wanted: 50
 
   - name: "glassdoor"
-    enabled: true
+    enabled: false
     search_terms:
       - "backend developer"
       - "data engineer"
@@ -64,4 +88,4 @@ sites:
       - { name: "South Africa", code: "ZAF" }
       - { name: "Australia", code: "AUS" }
     results_wanted: 40
-    delay_between_searches: 7
+    delay_between_searches: 10
