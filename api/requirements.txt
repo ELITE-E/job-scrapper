@@ -2,9 +2,12 @@ sqlalchemy
 asyncpg 
 alembic 
 pydantic 
+
 pydantic-settings 
 python-dotenv
 #python-jobspy
 tenacity 
+
 pyyaml
 pandas
+fastapi[standard]
