@@ -5,3 +5,4 @@ __pycache__/
 .venv/
 *.egg-info/
 scripts/*.py
+*=5.0.0
