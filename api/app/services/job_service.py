@@ -1,6 +1,6 @@
 from sqlalchemy import select,or_
 from sqlalchemy.orm import selectinload
-from sqlalchemy.sql import Select
+from sqlalchemy.sql import select
 
 from app.models import Job
 from app.schemas.job import JobFilters
@@ -57,3 +57,6 @@ def build_jobs_query(filters=JobFilters | None):
         )
 
     return query
+
+
+def get_job()

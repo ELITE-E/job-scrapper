@@ -28,10 +28,13 @@ class Settings(BaseSettings):
     DESCRIPTION :str = ""
     VERSION :str = "1.0.0"
     API_V1_STR : str = "/api/v1"
-    ENVIRONMENT :Literal["local","staging","production"]
+    ENVIRONMENT :Literal["development","staging","production"]
 
-    #SECRET_KEY: str
-    #SENTRY_DSN: HttpUrl | None = None
+    SECRET_KEY: str
+    SENTRY_DSN: HttpUrl | None = None
+    SECRET_KEY:str 
+    ALGORITHM:str 
+    ACCESS_TOKEN_EXPIRE_MINUTES :int 
 
 
     BACKEND_CORS_ORIGINS: Annotated[

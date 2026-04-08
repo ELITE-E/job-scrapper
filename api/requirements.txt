@@ -1,6 +1,9 @@
 sqlalchemy 
 asyncpg 
 alembic 
+
+uvicorn[standard]
+httptools
 pydantic 
 
 pydantic-settings 
@@ -11,3 +14,7 @@ tenacity
 pyyaml
 pandas
 fastapi[standard]
+
+python-multipart
+slowapi
+fastapi-pagination[sqlalchemy]
