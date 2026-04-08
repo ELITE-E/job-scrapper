@@ -25,13 +25,13 @@ async def lifespan(app:FastAPI):
 
     redis_client = redis.from_url(
         str(settings.REDIS_URL),
-        decode_responses=True,  # Automatically decode bytes to strings
+        decode_responses=False,  # Automatically decode bytes to strings
         socket_timeout=5.0,     # Connection timeout in seconds
         socket_connect_timeout=5.0
     )
 
     FastAPICache.init(RedisBackend(redis_client),
-                     prefix="/job-cache" )
+                     prefix="/jobapi-cache" )
     yield
 
     await redis_client.close()
