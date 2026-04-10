@@ -38,14 +38,16 @@ def get_password_hash(password:str)->str:
 def verify_password(plain_password:str,hashed_password:str)->bool:
     return pwd_context.verify(plain_password,hashed_password)
 
-def verify_token(token:str):
+def verify_token(token:str,token_type:str = "access"):
      try:
          payload = jwt.decode(
              token,
              settings.SECRET_KEY,
              algorithms=[settings.ALGORITHM]
          )
-
+         if payload.get("type","access") != token_type:
+           raise HTTPException(status_code=401,detail="Invalid token type")
+         
          sub :str | None = payload.get("sub")
 
          if sub is None :
@@ -60,3 +62,15 @@ def verify_token(token:str):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials"
         ) 
+     
+def create_refresh_token(data: dict) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+
+    to_encode = data.copy()
+    to_encode.update({"exp": expire, "type": "refresh"})
+
+    return jwt.encode(
+        to_encode,
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM
+    )

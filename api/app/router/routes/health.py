@@ -1,14 +1,21 @@
-from fastapi import APIRouter,status
+from fastapi import APIRouter,status,Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 import redis.asyncio as  redis
 
 from app.dependencies import get_db
+from app.schemas.error import HTTPError
 
 router = APIRouter()
 
-@router.get("/",tags=["health"])
+@router.get(
+        "/",
+        tags=["health"],
+          responses={
+        503: {"model": HTTPError, "description": "Service unavailable"},
+        },
+        )
 async def health_check(
     db : AsyncSession = Depends(get_db)
 ):

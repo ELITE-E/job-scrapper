@@ -9,19 +9,19 @@ async def get_categories_with_count(db:AsyncSession):
             func.count(Job.id).label("job_count")
         ).outerjoin(
             Job,
-            (Job.category_id == category_id)&(Job.is_active == True)
+            (Job.category_id == Category.id)&(Job.is_active == True)
         ).group_by(
             Category.id
         ).order_by(
             func.count(Job.id).desc()
         )
-
-        return [
-            {
-                **category.__dict__,
-                "job_count":job_count
-            }
-
-            for category,job_count in result.all()
-        ]
     )
+
+    return [
+        {
+            **category.__dict__,
+            "job_count":job_count
+        }
+
+        for category,job_count in result.all()
+    ]

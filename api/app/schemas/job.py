@@ -1,4 +1,4 @@
-from pydantic import BaseModel,ConfigDict
+from pydantic import BaseModel,ConfigDict,Field
 import uuid
 from datetime import date,datetime
 from typing import Optional,List,Dict
@@ -53,13 +53,13 @@ class JobListResponse(BaseModel):
     meta:PaginationMeta
 
 class JobFilters(BaseModel):
-    category: Optional[str] = None 
+    category: Optional[str] =  Field(default=None, min_length=2)
     source_site: Optional[str] = None
     job_type: Optional[str] = None
 
     is_remote: Optional[bool] = None
-    location: Optional[str] = None 
+    location: Optional[str | None] =  Field(default=None, min_length=2)
     search: Optional[str] = None
 
-    min_salary: Optional[float] = None
-    max_salary: Optional[float] = None
+    min_salary: Optional[float | None] =  Field(default=None, ge=0)
+    max_salary: Optional[float | None] =  Field(default=None, ge=0)
