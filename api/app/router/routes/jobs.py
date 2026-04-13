@@ -10,7 +10,7 @@ from fastapi_cache.decorator import cache
 
 from app.dependencies import get_db
 from app.schemas.job import JobResponse,JobFilters
-from app.services.category_service import build_jobs_query
+from app.services.job_service import build_jobs_query
 
 from app.core.cache import request_key_builder
 from app.schemas.error import HTTPError

@@ -3,11 +3,12 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
-from app.config import settings
+from app.core.config import settings
 from app.models import Category, Company, Job, JobCategoryKeyword
 from app.database import async_session_maker
 from app.scrapper.categorizer import load_categorizer_config
 
+# Use the backward-compatible get_db_url() method
 DATABASE_URL = settings.get_db_url()
 
 engine = create_async_engine(DATABASE_URL, echo=True)

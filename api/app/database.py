@@ -1,8 +1,10 @@
 from sqlalchemy.ext.asyncio import async_sessionmaker,create_async_engine,AsyncSession
 from sqlalchemy.orm import sessionmaker
-from .config import settings
+from app.core.config import settings
 
-DATABASE_URL=settings.get_db_url()
+# Use the computed field for database URL
+# The computed field will be a PostgresDsn object, convert to string
+DATABASE_URL = str(settings.SQLALCHEMY_DATABASE_URI)
 
 engine=create_async_engine(url=DATABASE_URL,
                            pool_size=10,
@@ -17,4 +19,3 @@ AsyncSessionLocation = sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False
 )
-#print(DATABASE_URL)
