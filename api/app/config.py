@@ -1,28 +1,12 @@
-from pathlib import Path
+"""
+DEPRECATED: Compatibility layer for backward compatibility.
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+This module re-exports the new Settings from app.core.config to maintain
+backward compatibility with existing code that imports from app.config.
 
+All new code should import directly from app.core.config.
+"""
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+from app.core.config import Settings, settings
 
-
-class Settings(BaseSettings):
-    DB_USER:str
-    DB_PASSWORD:str
-    DB_HOST:str
-    DB_PORT:str
-    DB_NAME:str
-
-    model_config=SettingsConfigDict(
-        env_file=BASE_DIR / ".env"
-    )
-
-    def get_db_url(self):
-        return(f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@"
-               f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}")
-
-
-settings=Settings()
-
-print("DB URL =>", settings.get_db_url())
-#print("DB HOST =>", settings.DB_HOST)
+__all__ = ["Settings", "settings"]

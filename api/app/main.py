@@ -12,11 +12,13 @@ from slowapi.extension import _rate_limit_exceeded_handler
 from starlette.middleware.cors import CORSMiddleware
 import redis.asyncio as redis
 from contextlib import asynccontextmanager
+import logging
 
 from app.core.config import settings
 from app.router.main import api_router
 from app.core.limiter import limiter
 
+logger = logging.getLogger(__name__)
 
 redis_client:redis.Redis | None = None
 
@@ -33,18 +35,30 @@ tags_metadata = [
 async def lifespan(app:FastAPI):
     global redis_client
 
-    redis_client = redis.from_url(
-        str(settings.REDIS_URL),
-        decode_responses=False,  # Automatically decode bytes to strings
-        socket_timeout=5.0,     # Connection timeout in seconds
-        socket_connect_timeout=5.0
-    )
-
-    FastAPICache.init(RedisBackend(redis_client),
-                     prefix="/jobapi-cache" )
+    try:
+        redis_client = redis.from_url(
+            str(settings.REDIS_URL),
+            decode_responses=False,  # Automatically decode bytes to strings
+            socket_timeout=5.0,     # Connection timeout in seconds
+            socket_connect_timeout=5.0
+        )
+        # Test connection
+        await redis_client.ping()
+        logger.info("✅ Redis connection established")
+        
+        FastAPICache.init(RedisBackend(redis_client),
+                         prefix="/jobapi-cache" )
+    except Exception as e:
+        logger.warning(f"⚠️ Redis unavailable: {e}. Continuing without cache.")
+        redis_client = None
+    
     yield
 
-    await redis_client.close()
+    if redis_client:
+        try:
+            await redis_client.close()
+        except Exception as e:
+            logger.warning(f"Error closing Redis: {e}")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -54,8 +68,8 @@ app = FastAPI(
     lifespan=lifespan,
     contact=settings.CONTACT,
     licence_info=settings.LISENCE_INFO,
-    docs_url=f"{settings.DOCS_URL}",
-    redoc_url=f"{settings.REDOC_URL}",
+    docs_url=f"{settings.API_V1_STR}/docs",
+    redoc_url=f"{settings.API_V1_STR}/redoc",
 
     openapi_tags=tags_metadata
 
@@ -63,7 +77,8 @@ app = FastAPI(
 add_pagination(app)
 
 app.state.limiter = limiter
-app.add_event_handler(RateLimitExceeded,_rate_limit_exceeded_handler)
+
+app.add_exception_handler(RateLimitExceeded,_rate_limit_exceeded_handler)
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request:Request,exc:HTTPException):

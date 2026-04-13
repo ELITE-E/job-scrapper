@@ -59,4 +59,3 @@ def build_jobs_query(filters=JobFilters | None):
     return query
 
 
-def get_job()

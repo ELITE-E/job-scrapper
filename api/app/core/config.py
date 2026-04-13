@@ -22,12 +22,11 @@ class Settings(BaseSettings):
     PROJECT_NAME :str  = "Job Scrapper API"
     DESCRIPTION :str = "RESTful API for aggregated job listings from multiple job boards."
     VERSION :str = "1.0.0"
-    CONTACT:dict ={"name":"Ex","email":"Johndoe566@gmail.com"},
-    LISENCE_INFO:dict ={"name":"MIT"},
-    API_V1_STR : str = "/api/v1",
+    CONTACT:dict ={"name":"Erick",
+                   "email":"ericomondi256@gmail.com"}
+    LISENCE_INFO:dict ={"name":"MIT"}
+    API_V1_STR : str = "/api/v1"
     ENVIRONMENT :str = "development"
-    DOCS_URL:str = "/api/v1/docs",
-    REDOC_URL:str = "/api/v1/docs",
 
     SENTRY_DSN: HttpUrl | None = None
     SECRET_KEY:str 
@@ -81,6 +80,13 @@ class Settings(BaseSettings):
         extra="ignore",
         case_sensitive=True
     )
+    
+    def get_db_url(self) -> str:
+        """
+        Backward compatibility method. Returns database URL as string.
+        Use SQLALCHEMY_DATABASE_URI property for new code.
+        """
+        return str(self.SQLALCHEMY_DATABASE_URI)
 
     
 
