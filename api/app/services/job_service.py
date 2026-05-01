@@ -2,7 +2,9 @@ from sqlalchemy import select,or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import select
 
-from app.models import Job
+from uuid import UUID
+from app.models.job import Job
+from app.models.category import Category
 from app.schemas.job import JobFilters
 
 def build_jobs_query(filters=JobFilters | None):
@@ -41,10 +43,10 @@ def build_jobs_query(filters=JobFilters | None):
 
     
     if filters.min_salary is not None:
-        query = query.where(Job.salary_max >= filters.min_salary)
+        query = query.where(Job.salary_min >= filters.min_salary)
 
     if filters.max_salary is not None:
-        query = query.where(Job.salary_min <= filters.max_salary)
+        query = query.where(Job.salary_max <= filters.max_salary)
 
     
     if filters.search:
@@ -59,3 +61,12 @@ def build_jobs_query(filters=JobFilters | None):
     return query
 
 
+def get_job_by_id_query(job_id : UUID):
+    return(
+        select(Job).
+        options(
+            selectinload(Job.company),
+            selectinload(Job.category)
+        )
+        .where(Job.id == job_id)
+    )
