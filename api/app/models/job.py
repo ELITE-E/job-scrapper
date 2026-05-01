@@ -2,6 +2,8 @@ import uuid
 from decimal import Decimal
 from  datetime import date,datetime
 
+from app.models.category import Category
+
 from .base import Base
 from .mixins import UUIDPrimaryKeyMixin,TimestampMixin
 
