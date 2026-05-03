@@ -7,3 +7,6 @@ __pycache__/
 scripts/*.py
 *=5.0.0
 *.md
+!README.md
+*.audit_report_diagnostic.json
+*.audit_report.json

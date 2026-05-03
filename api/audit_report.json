@@ -1,0 +1,125 @@
+{
+  "metadata": {
+    "base_url": "http://localhost:8000/api/v1",
+    "started": null,
+    "completed": "2026-04-15T07:45:21.132278Z"
+  },
+  "summary": {
+    "total_tests": 11,
+    "passed": 5,
+    "failed": 6,
+    "success_rate": "45.5%"
+  },
+  "results": [
+    {
+      "test": "health_check",
+      "success": true,
+      "status_code": 200,
+      "details": {
+        "status": "ok",
+        "database": null,
+        "redis": "connected"
+      },
+      "timestamp": "2026-04-15T07:45:17.641450Z"
+    },
+    {
+      "test": "job_list",
+      "success": true,
+      "status_code": 200,
+      "details": {
+        "items_returned": 10,
+        "total_in_db": 260,
+        "has_pagination": true
+      },
+      "timestamp": "2026-04-15T07:45:19.826265Z"
+    },
+    {
+      "test": "filter_jobs_category",
+      "success": true,
+      "status_code": 200,
+      "details": {
+        "filter": "category=backend AND is_remote=true",
+        "results": 0
+      },
+      "timestamp": "2026-04-15T07:45:19.862211Z"
+    },
+    {
+      "test": "search_jobs",
+      "success": true,
+      "status_code": 200,
+      "details": {
+        "query": "python developer",
+        "results": 0
+      },
+      "timestamp": "2026-04-15T07:45:19.963152Z"
+    },
+    {
+      "test": "single_job",
+      "success": false,
+      "status_code": 422,
+      "details": {
+        "job_id": "3f20e3b3-5f00-46e2-9c75-1342466b999e",
+        "has_title": false,
+        "has_company": false
+      },
+      "timestamp": "2026-04-15T07:45:19.972670Z"
+    },
+    {
+      "test": "categories",
+      "success": true,
+      "status_code": 200,
+      "details": {
+        "count": 14,
+        "response_type": "list"
+      },
+      "timestamp": "2026-04-15T07:45:20.009637Z"
+    },
+    {
+      "test": "register",
+      "success": false,
+      "status_code": 500,
+      "details": {
+        "email": "test_c1e95617@example.com",
+        "has_user_id": false
+      },
+      "timestamp": "2026-04-15T07:45:20.066571Z"
+    },
+    {
+      "test": "login",
+      "success": false,
+      "status_code": null,
+      "details": {
+        "error": ""
+      },
+      "timestamp": "2026-04-15T07:45:20.852418Z"
+    },
+    {
+      "test": "protected_route_valid",
+      "success": false,
+      "status_code": null,
+      "details": {
+        "error": "No valid token from step 8"
+      },
+      "timestamp": "2026-04-15T07:45:20.852418Z"
+    },
+    {
+      "test": "invalid_token",
+      "success": false,
+      "status_code": 404,
+      "details": {
+        "expected": 401,
+        "actual": 404
+      },
+      "timestamp": "2026-04-15T07:45:21.114032Z"
+    },
+    {
+      "test": "rate_limit",
+      "success": false,
+      "status_code": null,
+      "details": {
+        "error": ""
+      },
+      "timestamp": "2026-04-15T07:45:21.132278Z"
+    }
+  ]
+}
