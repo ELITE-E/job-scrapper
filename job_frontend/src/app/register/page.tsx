@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { login as loginAPI } from "@/services/authApi";
+import { register as registerAPI } from "@/services/authApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,20 +16,16 @@ import {
 } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const registered = searchParams.get("registered") === "1";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
 
   const mutation = useMutation({
-    mutationFn: () => loginAPI(email, password),
-    onSuccess: (response) => {
-      // Store token in localStorage
-      localStorage.setItem("token", response.access_token);
-      // Redirect to jobs page
-      router.push("/jobs");
+    mutationFn: () => registerAPI(email, password, fullName || undefined),
+    onSuccess: () => {
+      router.push("/login?registered=1");
     },
   });
 
@@ -42,19 +38,27 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Create account</CardTitle>
           <CardDescription>
-            Enter your credentials to access your account
+            Sign up to save jobs and manage your profile
           </CardDescription>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {registered && (
-              <div className="rounded-md bg-emerald-100 p-3 text-sm text-emerald-900">
-                Account created. Please log in.
-              </div>
-            )}
+            <div className="space-y-2">
+              <label htmlFor="full-name" className="text-sm font-medium">
+                Full name (optional)
+              </label>
+              <Input
+                id="full-name"
+                placeholder="Jane Doe"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                disabled={mutation.isPending}
+              />
+            </div>
+
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 Email
@@ -89,7 +93,7 @@ export default function LoginPage() {
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                 {mutation.error instanceof Error
                   ? mutation.error.message
-                  : "Invalid email or password"}
+                  : "Email already exists"}
               </div>
             )}
 
@@ -101,24 +105,18 @@ export default function LoginPage() {
               {mutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Logging in...
+                  Creating account...
                 </>
               ) : (
-                "Login"
+                "Create account"
               )}
             </Button>
           </form>
 
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link href="/register" className="text-primary hover:underline">
-              Sign up
-            </Link>
-          </div>
-
-          <div className="mt-2 text-center text-sm text-muted-foreground">
-            <Link href="/jobs" className="text-primary hover:underline">
-              Browse jobs as guest
+            Already have an account?{" "}
+            <Link href="/login" className="text-primary hover:underline">
+              Log in
             </Link>
           </div>
         </CardContent>

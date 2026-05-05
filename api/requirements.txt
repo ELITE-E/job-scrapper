@@ -18,3 +18,8 @@ fastapi[standard]
 python-multipart
 slowapi
 fastapi-pagination[sqlalchemy]
+
+celery[redis]
+redis
+flower
+eventlet
