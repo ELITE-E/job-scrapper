@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-//import Link from "next/link";
+import Link from "next/link";
 import {
   Card,
   CardHeader,
@@ -93,9 +93,9 @@ export function JobCard({ job }: Props) {
           </div>
 
           <div className="ml-auto">
-            <Button asChild>
-              <a href={`/jobs/${job.id}`}>View Details</a>
-            </Button>
+            <Link href={`/jobs/${job.id}`}>
+              <Button>View Details</Button>
+            </Link>
           </div>
         </div>
       </CardFooter>

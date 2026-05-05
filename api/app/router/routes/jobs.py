@@ -10,12 +10,13 @@ from fastapi_cache.decorator import cache
 
 
 from app.dependencies import get_db
-from app.schemas.job import JobResponse,JobFilters
+from app.schemas.job import JobResponse,JobFilters,JobDetailResponse
 from app.services.job_service import build_jobs_query,get_job_by_id_query
 
 from app.core.cache import request_key_builder
 from app.schemas.error import HTTPError
 from app.schemas.category import CategoryResponse
+
 
 from app.core.limiter import limiter
 from app.models.job import Job
@@ -50,7 +51,7 @@ async def get_jobs(
 
 @router.get(
     "/jobs/{job_id}",
-    response_model=JobResponse,
+    response_model=JobDetailResponse,
      responses={
         404: {"model": HTTPError, "description": "Job not found"},
         422: {"model": HTTPError, "description": "Invalid job ID"},
@@ -72,6 +73,9 @@ async def get_job(
   result = await db.execute(query)
   
   job = result.scalar_one_or_none()
+
+  #Print the description
+  print(f"API Log: Job ID {job_uuid} has description: {job.description[:50] if job.description else 'None'}")
 
   if not job:
     raise HTTPException(status_code=404,detail="Job not found")

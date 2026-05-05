@@ -1,7 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@plugin "@tailwindcss/typography";
+/* Removed invalid @plugin rule; add the typography plugin in tailwind.config.js:
+   plugins: [require('@tailwindcss/typography')] */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -128,4 +129,17 @@
   html {
     @apply font-sans;
   }
+}
+
+.job-description {
+  font-size: 0.875rem; /* 14px on mobile */
+}
+@media (min-width: 768px) {
+  .job-description {
+    font-size: 1rem; /* 16px on tablet+ */
+  }
+}
+.job-description strong {
+  font-weight: 700;
+  color: #2563eb; /* or any color */
 }
