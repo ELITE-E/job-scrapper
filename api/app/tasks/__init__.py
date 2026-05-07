@@ -34,7 +34,11 @@ def scrape_jobs_task(self, triggered_by="beat"):
     lock_acquired = False
     redis_client = None
     try:
-        redis_client = Redis.from_url(str(settings.REDIS_URL))
+        redis_client = Redis.from_url(
+            str(settings.REDIS_URL),
+            socket_timeout=5,
+            socket_connect_timeout=5,
+        )
         lock_acquired = redis_client.set("scrape_lock", "1", ex=21600, nx=True)
         if not lock_acquired:
             logger.info("[scrape_jobs_task] Lock exists; skipping run")
