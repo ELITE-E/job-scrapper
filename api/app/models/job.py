@@ -7,7 +7,7 @@ from app.models.category import Category
 from .base import Base
 from .mixins import UUIDPrimaryKeyMixin,TimestampMixin
 
-from sqlalchemy import String,Text,ForeignKey,Numeric,text,Index,func,Date
+from sqlalchemy import String,Text,ForeignKey,Numeric,Index,func,Date
 from sqlalchemy.orm import mapped_column,Mapped,relationship
 from sqlalchemy.dialects.postgresql import UUID,JSONB
 
@@ -65,7 +65,7 @@ class Job(Base,
     ),
     Index(
         "ix_jobs_search",
-        text("to_tsvector('english', title || ' ' || description)"),
+        func.to_tsvector("english", (title + " " + description)),
         postgresql_using="gin"
     ),
     )

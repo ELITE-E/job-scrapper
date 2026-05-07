@@ -171,7 +171,7 @@ class ScrapeResult(BaseModel):
 
     jobs_found: int = 0
     jobs_new: int = 0
-    jobs_updated: int = 0
+    jobs_duplicates: int = 0
 
     errors: List[str] = Field(default_factory=list)
     duration_seconds: float = 0.0

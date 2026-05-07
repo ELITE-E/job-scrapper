@@ -52,6 +52,7 @@ class BaseScrapper:
     async def run(self)->ScrapeResult:
         total_new_jobs=0
         total_found_jobs = 0
+        total_duplicates = 0
         errors=[]
         start_time = time.time()
 
@@ -86,6 +87,9 @@ class BaseScrapper:
                     #4.Deduplicate
                     deduped_jobs=await self._deduplicate(valid_jobs)
 
+                    duplicates_for_term = max(len(valid_jobs) - len(deduped_jobs), 0)
+                    total_duplicates += duplicates_for_term
+
                     if not deduped_jobs:
                         #self.logger.info(f"No job after deduplication for term: {term} ")
                         continue
@@ -110,7 +114,7 @@ class BaseScrapper:
             status="success" if not errors else 'partial_failure',
             jobs_found=total_found_jobs,
             jobs_new=total_new_jobs,
-            jobs_updated= 0,
+            jobs_duplicates=total_duplicates,
             errors=errors,
             duration_seconds= time.time() - start_time,
         )
