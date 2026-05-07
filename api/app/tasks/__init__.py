@@ -43,6 +43,7 @@ def scrape_jobs_task(self, triggered_by="beat"):
             "[scrape_jobs_task] Lock unavailable; continuing without lock: %s",
             lock_err,
         )
+        redis_client = None
 
     log_id = None
     try:
@@ -68,9 +69,10 @@ def scrape_jobs_task(self, triggered_by="beat"):
     try:
         results = asyncio.run(run_full_scrape())
         jobs_added = sum(result.jobs_new for result in results)
+        jobs_duplicates = sum(result.jobs_duplicates for result in results)
         stats = {
             "jobs_added": jobs_added,
-            "jobs_duplicates": 0,
+            "jobs_duplicates": jobs_duplicates,
         }
         logger.info("[scrape_jobs_task] Completed. Stats: %s", stats)
 

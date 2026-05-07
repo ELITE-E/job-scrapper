@@ -20,7 +20,6 @@ python-multipart
 slowapi
 fastapi-pagination[sqlalchemy]
 
-celery[redis,eventlet]==5.4.*
+celery[redis]==5.4.*
 flower==2.0.*
-eventlet==0.36.*
-pywin32==306
+pywin32==306; sys_platform == "win32"

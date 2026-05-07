@@ -1,19 +1,23 @@
 from contextlib import contextmanager
 from datetime import UTC, datetime
+import logging
 
 from sqlalchemy import create_engine
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 from app.models.scrape_log import ScrapeLog
 
 DATABASE_URL = str(settings.SQLALCHEMY_DATABASE_URI)
-SYNC_DATABASE_URL = DATABASE_URL.replace(
-    "postgresql+asyncpg", "postgresql+psycopg2"
+SYNC_DATABASE_URL = str(
+    make_url(DATABASE_URL).set(drivername="postgresql+psycopg2")
 )
 
-sync_engine = create_engine(SYNC_DATABASE_URL)
+sync_engine = create_engine(SYNC_DATABASE_URL, pool_pre_ping=True)
 SyncSession = sessionmaker(bind=sync_engine)
+
+logger = logging.getLogger(__name__)
 
 
 @contextmanager
@@ -40,6 +44,8 @@ def log_scrape_start(task_id: str, site_name: str, triggered_by: str = "beat") -
         )
         session.add(log_entry)
         session.flush()
+        session.commit()
+        session.refresh(log_entry)
         return int(log_entry.id)
 
 
@@ -49,11 +55,18 @@ def log_scrape_success(log_id: int, stats: dict) -> None:
         if log_entry is None:
             raise ValueError(f"ScrapeLog id={log_id} not found")
 
+        required_keys = {"jobs_added", "jobs_duplicates"}
+        missing_keys = required_keys - stats.keys()
+        if missing_keys:
+            missing = ", ".join(sorted(missing_keys))
+            logger.error("Missing stats keys for ScrapeLog %s: %s", log_id, missing)
+            raise ValueError(f"Missing stats keys: {missing}")
+
         finished_at = datetime.now(UTC)
         log_entry.status = "SUCCESS"
         log_entry.completed_at = finished_at
-        log_entry.jobs_new = stats.get("jobs_added", 0)
-        log_entry.jobs_duplicates = stats.get("jobs_duplicates", 0)
+        log_entry.jobs_new = stats["jobs_added"]
+        log_entry.jobs_duplicates = stats["jobs_duplicates"]
 
         if log_entry.started_at is not None:
             log_entry.duration_seconds = (
