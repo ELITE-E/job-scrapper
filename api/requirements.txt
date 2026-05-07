@@ -1,6 +1,7 @@
 sqlalchemy 
 asyncpg 
 alembic 
+psycopg2-binary
 
 uvicorn[standard]
 httptools
@@ -18,3 +19,8 @@ fastapi[standard]
 python-multipart
 slowapi
 fastapi-pagination[sqlalchemy]
+
+celery[redis,eventlet]==5.4.*
+flower==2.0.*
+eventlet==0.36.*
+pywin32==306
