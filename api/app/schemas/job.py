@@ -44,7 +44,7 @@ class JobResponse(BaseModel):
 
      model_config = ConfigDict(from_attributes=True)
 
-class JonDetailResponse(JobResponse):
+class JobDetailResponse(JobResponse):
     description:Optional[str] = None
     extras:Dict = {}
 
