@@ -62,6 +62,23 @@ class Settings(BaseSettings):
             port=self.DB_PORT,
             path=self.DB_NAME,
         )
+
+    @computed_field
+    @property
+    def DATABASE_URL(self) -> PostgresDsn:
+        return self.SQLALCHEMY_DATABASE_URI
+
+    @computed_field
+    @property
+    def SYNC_DATABASE_URL(self) -> PostgresDsn:
+        return PostgresDsn.build(
+            scheme="postgresql+psycopg2",
+            username=self.DB_USER,
+            password=self.DB_PASSWORD,
+            host=self.DB_HOST,
+            port=self.DB_PORT,
+            path=self.DB_NAME,
+        )
     
     REDIS_HOST: str 
     REDIS_PORT: int 

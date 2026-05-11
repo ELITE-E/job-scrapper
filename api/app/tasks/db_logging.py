@@ -3,16 +3,12 @@ from datetime import UTC, datetime
 import logging
 
 from sqlalchemy import create_engine
-from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 from app.models.scrape_log import ScrapeLog
 
-DATABASE_URL = str(settings.SQLALCHEMY_DATABASE_URI)
-SYNC_DATABASE_URL = str(
-    make_url(DATABASE_URL).set(drivername="postgresql+psycopg2")
-)
+SYNC_DATABASE_URL = str(settings.SYNC_DATABASE_URL)
 
 sync_engine = create_engine(SYNC_DATABASE_URL, pool_pre_ping=True)
 SyncSession = sessionmaker(bind=sync_engine)

@@ -1,0 +1,54 @@
+#!/bin/bash
+set -o errexit
+set -o pipefail
+set -o nounset
+
+postgres_ready() {
+        python - <<'PY'
+import os
+import sys
+
+import psycopg2
+from psycopg2 import OperationalError
+
+db_user = os.getenv("DB_USER")
+db_password = os.getenv("DB_PASSWORD")
+db_host = os.getenv("DB_HOST")
+db_port = os.getenv("DB_PORT", "5432")
+db_name = os.getenv("DB_NAME")
+
+missing = [
+    name
+    for name, value in {
+        "DB_USER": db_user,
+        "DB_PASSWORD": db_password,
+        "DB_HOST": db_host,
+        "DB_NAME": db_name,
+    }.items()
+    if not value
+]
+if missing:
+    raise SystemExit(f"Missing database env vars: {', '.join(missing)}")
+
+try:
+    conn = psycopg2.connect(
+        dbname=db_name,
+        user=db_user,
+        password=db_password,
+        host=db_host,
+        port=db_port,
+    )
+    conn.close()
+except OperationalError:
+    sys.exit(1)
+PY
+}
+
+until postgres_ready; do
+    echo "Waiting for PostgreSQL..."
+    sleep 1
+done
+
+echo "PostgreSQL is available"
+
+exec "$@"

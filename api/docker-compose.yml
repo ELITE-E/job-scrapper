@@ -1,0 +1,72 @@
+services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+
+  web:
+    build:
+      context: .
+      dockerfile: ./compose/local/fastapi/Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    command: /start
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./compose/local/fastapi/Dockerfile
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    command: /celery/worker/start
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: ./compose/local/fastapi/Dockerfile
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    command: /celery/beat/start
+
+  flower:
+    build:
+      context: .
+      dockerfile: ./compose/local/fastapi/Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    command: /celery/flower/start
+
+volumes:
+  postgres_data:

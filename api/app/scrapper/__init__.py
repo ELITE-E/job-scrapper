@@ -9,7 +9,7 @@ from app.database import async_session_maker as async_session_factory
 logger=logging.getLogger("scraper.orcherstrator")
 logger.setLevel(logging.INFO)
 
-async def run_full_scrape(config_path:str="config/scaper_config.yaml")->List[ScrapeResult]:
+async def run_full_scrape(config_path:str="config/scraper_config.yaml")->List[ScrapeResult]:
 
     config=load_yaml(config_path)
 
