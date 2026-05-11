@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
+    restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
@@ -9,14 +10,27 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${DB_USER} -d $${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   web:
     build:
       context: .
       dockerfile: ./compose/local/fastapi/Dockerfile
+    restart: unless-stopped
     volumes:
       - .:/app
     ports:
@@ -24,40 +38,49 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: /start
 
   celery_worker:
     build:
       context: .
       dockerfile: ./compose/local/fastapi/Dockerfile
+    restart: unless-stopped
     volumes:
       - .:/app
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: /celery/worker/start
 
   celery_beat:
     build:
       context: .
       dockerfile: ./compose/local/fastapi/Dockerfile
+    restart: unless-stopped
     volumes:
       - .:/app
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: /celery/beat/start
 
   flower:
     build:
       context: .
       dockerfile: ./compose/local/fastapi/Dockerfile
+    restart: unless-stopped
     volumes:
       - .:/app
     ports:
@@ -65,7 +88,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     command: /celery/flower/start
 
 volumes:
