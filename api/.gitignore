@@ -12,3 +12,5 @@ scripts/*.py
 *.audit_report.json
 celerybeat-schedule
 celerybeat-schedule.db
+celerybeat.pid
+logs/

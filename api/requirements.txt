@@ -1,7 +1,7 @@
 sqlalchemy 
 asyncpg 
 alembic 
-psycopg2-binary
+psycopg2
 
 uvicorn[standard]
 httptools
@@ -9,7 +9,7 @@ pydantic
 
 pydantic-settings 
 python-dotenv
-#python-jobspy
+python-jobspy
 tenacity 
 
 pyyaml
@@ -19,6 +19,7 @@ fastapi[standard]
 python-multipart
 slowapi
 fastapi-pagination[sqlalchemy]
+fastapi-cache2
 
 celery[redis]
 redis
