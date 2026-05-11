@@ -21,15 +21,15 @@ broker_connection_retry_on_startup = True
 worker_max_tasks_per_child = 50
 
 # Prevent long-running tasks from being re-queued prematurely.
-#broker_transport_options = {"visibility_timeout": 43200}  # 12 hours
+broker_transport_options = {"visibility_timeout": 43200}  # 12 hours
 
 from celery.schedules import crontab
 
 beat_schedule = {
 	#"scrape-jobs-every-6-hours"
-    "scrape-jobs-every-2-mins": {
+	"scrape-jobs-every-2-mins": {
 		"task": "app.tasks.scrape_jobs_task",
 		#"schedule": crontab(minute=0, hour="*/6"),
-        'schedule': crontab(minute='*/8'),
+		"schedule": crontab(minute="*/2"),
 	},
 }
