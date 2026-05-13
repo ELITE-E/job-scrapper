@@ -1,3 +1,4 @@
+import os
 import asyncio
 import logging
 from pathlib import Path
@@ -12,15 +13,19 @@ logger.setLevel(logging.INFO)
 
 async def run_full_scrape(config_path: str | None = None) -> List[ScrapeResult]:
     if config_path is None:
-        resolved_config_path = (
-            Path(__file__).resolve().parent / "config" / "scraper_config.yaml"
-        )
+        env_path = os.getenv("SCRAPER_CONFIG_PATH")
+        if env_path:
+            resolved_config_path = Path(env_path)
+        else:
+
+            root_dir = Path(__file__).parent.parent.parent
+            resolved_config_path = root_dir / "config" / "scraper_config.yaml"
+        
     else:
-        resolved_config_path = Path(config_path)
-        if not resolved_config_path.is_absolute():
-            resolved_config_path = (
-                Path(__file__).resolve().parent / resolved_config_path
-            ).resolve()
+        resolved_config_path = Path(config_path).resolve()
+
+    if not resolved_config_path.exists():
+        raise FileNotFoundError(f"Critical:Config not found at {resolved_config_path}")
 
     config = load_yaml(str(resolved_config_path))
 

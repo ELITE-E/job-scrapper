@@ -24,4 +24,8 @@ fastapi-cache2
 celery[redis]
 redis
 flower
-eventlet
+
+
+python-jose[cryptography]
+passlib[bcrypt]>=1.7.4 ,<2.0.0
+email-validator>=2.0.0
