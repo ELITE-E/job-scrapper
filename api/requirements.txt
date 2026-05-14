@@ -29,3 +29,13 @@ flower
 python-jose[cryptography]
 passlib[bcrypt]>=1.7.4 ,<2.0.0
 email-validator>=2.0.0
+
+# Phase 8 — OpenTelemetry Observability
+opentelemetry-api==1.33.*
+opentelemetry-sdk==1.33.*
+opentelemetry-exporter-otlp-proto-grpc==1.33.*
+opentelemetry-instrumentation-fastapi==0.54.*
+opentelemetry-instrumentation-sqlalchemy==0.54.*
+opentelemetry-instrumentation-celery==0.54.*
+opentelemetry-instrumentation-httpx==0.54.*
+grpcio==1.71.*

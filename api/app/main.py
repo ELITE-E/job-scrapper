@@ -17,6 +17,7 @@ import logging
 from app.core.config import settings
 from app.router.main import api_router
 from app.core.limiter import limiter
+from app.telemetry import setup_telemetry
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +75,9 @@ app = FastAPI(
     openapi_tags=tags_metadata
 
 )
-add_pagination(app)
+setup_telemetry(app)
 
+add_pagination(app)
 app.state.limiter = limiter
 
 app.add_exception_handler(RateLimitExceeded,_rate_limit_exceeded_handler)

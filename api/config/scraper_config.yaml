@@ -30,6 +30,8 @@ sites:
     hours_old: 72
     proxies: []
     delay_between_searches: 10
+    rate_limit: 30
+    respect_robots_txt: true
 
   # --- INDEED USA CONFIG ---
   - indeed_usa:
@@ -50,6 +52,8 @@ sites:
     hours_old: 72
     proxies: []
     delay_between_searches: 10
+    rate_limit: 30
+    respect_robots_txt: true
 
   - name: "linkedin"
     enabled: true
@@ -65,6 +69,8 @@ sites:
     linkedin_fetch_description: true
     proxies: []
     delay_between_searches: 25
+    rate_limit: 20
+    respect_robots_txt: true
 
   - name: "zip_recruiter"
     enabled: true
@@ -75,6 +81,8 @@ sites:
     location:
       - { name: "United States", code: "USA" }
       - { name: "Kenya", code: "KEN" }
+    rate_limit: 30
+    respect_robots_txt: true
       - { name: "Japan", code: "JPN" }
     results_wanted: 50
 
@@ -86,6 +94,8 @@ sites:
       - "machine learning engineer"
     location:
       - { name: "South Africa", code: "ZAF" }
-      - { name: "Australia", code: "AUS" }
+      - { name: "Australia", c
+    rate_limit: 25
+    respect_robots_txt: trueode: "AUS" }
     results_wanted: 40
     delay_between_searches: 10
