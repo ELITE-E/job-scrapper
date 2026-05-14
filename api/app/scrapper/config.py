@@ -48,6 +48,10 @@ class SiteConfig(BaseModel):
     delay_beetween_searches:int = 5
     country_indeed:Optional[str]= None
     likedin_fetch_description: bool = False
+    
+    # Phase 9: Rate limiting & protection
+    rate_limit: int = 30  # max requests per minute for this site
+    respect_robots_txt: bool = True  # check robots.txt before scraping
 
     @field_validator("name")
     @classmethod

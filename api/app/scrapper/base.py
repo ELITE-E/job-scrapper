@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from typing import List,Tuple
 import time
 
@@ -12,6 +13,8 @@ from tenacity import Retrying,stop_after_attempt,wait_exponential,retry_if_excep
 from .schemas import ScrapedJob,ScrapeResult
 from .validator import validate_batch
 from .categorizer import JobCategorizer,load_categorizer_config
+from .rate_limiter import RedisRateLimiter
+from .robots_checker import can_scrape_site
 
 
 
@@ -30,6 +33,9 @@ class BaseScrapper:
         
         self.categorizer = JobCategorizer(load_categorizer_config())
         self.retry_config=retry_config
+        
+        # Phase 9: Initialize rate limiter
+        self.rate_limiter = RedisRateLimiter()
 
         self.logger=logging.getLogger(f"scrapper.{site_config.name}")
         self.logger.setLevel(logging.INFO)
@@ -126,6 +132,30 @@ class BaseScrapper:
         try:
             self.logger.debug(f"Fetching jobs for term: {search_term}")
 
+            # Phase 9: Check rate limit
+            rate_limit_allowed = self.rate_limiter.check_rate_limit(
+                self.site_config.name,
+                self.site_config.rate_limit
+            )
+            if not rate_limit_allowed:
+                wait_time = 60
+                self.logger.warning(
+                    f"Rate limit exceeded for {self.site_config.name}, "
+                    f"waiting {wait_time}s before retry"
+                )
+                time.sleep(wait_time)
+                # Retry after sleep (recursive call for single retry)
+                # For production, consider using tenacity with custom waiter
+
+            # Phase 9: Check robots.txt compliance if enabled
+            if self.site_config.respect_robots_txt:
+                if not can_scrape_site(self.site_config.name, user_agent="JobAggregatorBot"):
+                    self.logger.warning(
+                        f"robots.txt disallows scraping {self.site_config.name} "
+                        f"for search term: {search_term}"
+                    )
+                    return pd.DataFrame()  # Return empty DataFrame, skip this term
+
             # Supported countries for Indeed in JobSpy (validated enum)
             INDEED_SUPPORTED_COUNTRIES = {
                 "usa", "can", "gbr", "aus", "nld", "fra", "deu", 
@@ -166,11 +196,37 @@ class BaseScrapper:
 
             self.logger.debug(f"Fetching jobs for term:{search_term}")
 
-            return scrape_jobs(**kwargs)
+            # Phase 9: Wrap scrape_jobs call to detect rate limit hits
+            try:
+                return scrape_jobs(**kwargs)
+            except Exception as scrape_exc:
+                # Phase 9: Detect rate limit hit (429 or rate limit text in error)
+                error_msg = str(scrape_exc).lower()
+                if "429" in error_msg or "rate limit" in error_msg or "too many requests" in error_msg:
+                    self._log_rate_limit_hit(scrape_exc, search_term, location_str)
+                raise  # Re-raise for tenacity to handle retry
+
         except Exception as e:
             self.logger.exception(
                 f"Fetch failed | site={self.site_config.name} | term={search_term}"
             )
+
+    def _log_rate_limit_hit(self, exception, search_term: str, location_str: str) -> None:
+        """
+        Phase 9: Log rate limit hit with structured information.
+
+        Args:
+            exception: The exception that was raised
+            search_term: The search term being scraped
+            location_str: The location being scraped
+        """
+        self.logger.warning(
+            f"🔴 RATE LIMIT HIT for site={self.site_config.name}, "
+            f"search_term={search_term}, location={location_str}, "
+            f"rate_limit_per_min={self.site_config.rate_limit}, "
+            f"exception={exception}"
+        )
+
         
     
     def _transform(self,df:pd.DataFrame)->List[ScrapedJob]:

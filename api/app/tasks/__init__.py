@@ -2,6 +2,8 @@ import asyncio
 import logging
 import traceback
 
+from opentelemetry import trace
+from opentelemetry.trace import StatusCode
 from redis import Redis
 
 from app.celery_app import app
@@ -14,6 +16,7 @@ from app.tasks.db_logging import (
 from app.scrapper import run_full_scrape
 
 logger = logging.getLogger(__name__)
+tracer = trace.get_tracer(__name__)
 
 
 @app.task(
@@ -71,22 +74,48 @@ def scrape_jobs_task(self, triggered_by="beat"):
         return stats
 
     try:
-        results = asyncio.run(run_full_scrape())
-        jobs_added = sum(result.jobs_new for result in results)
-        jobs_duplicates = sum(result.jobs_duplicates for result in results)
-        stats = {
-            "jobs_added": jobs_added,
-            "jobs_duplicates": jobs_duplicates,
-        }
-        logger.info("[scrape_jobs_task] Completed. Stats: %s", stats)
+        with tracer.start_as_current_span("run_full_scrape") as span:
+            span.set_attribute("scraper.triggered_by", triggered_by)
+            span.set_attribute("scraper.task_id", self.request.id or "unknown")
+            span.set_attribute("scraper.retry_count", self.request.retries)
+            
+            results = asyncio.run(run_full_scrape())
+            jobs_added = sum(result.jobs_new for result in results)
+            jobs_duplicates = sum(result.jobs_duplicates for result in results)
+            stats = {
+                "jobs_added": jobs_added,
+                "jobs_duplicates": jobs_duplicates,
+            }
+            
+            span.set_attribute("scraper.jobs_added", jobs_added)
+            span.set_attribute("scraper.jobs_duplicates", jobs_duplicates)
+            
+            logger.info("[scrape_jobs_task] Completed. Stats: %s", stats)
 
-        if log_id is not None:
-            log_scrape_success(log_id, stats)
+            if log_id is not None:
+                log_scrape_success(log_id, stats)
 
-        return stats
+            return stats
     except Exception as exc:
         traceback_str = traceback.format_exc()
+        
+        # Phase 9: Detect rate limit hits
+        error_msg = str(exc).lower()
+        if "429" in error_msg or "rate limit" in error_msg or "too many requests" in error_msg:
+            logger.warning(
+                "[scrape_jobs_task] 🔴 RATE LIMIT HIT detected. "
+                "Celery will retry in %s seconds. Attempt %s of %s",
+                self.default_retry_delay,
+                self.request.retries + 1,
+                self.max_retries + 1,
+            )
+        
         logger.error("[scrape_jobs_task] Failed: %s\n%s", exc, traceback_str)
+        
+        # Record the exception in the current span
+        current_span = trace.get_current_span()
+        current_span.set_status(StatusCode.ERROR, str(exc))
+        current_span.record_exception(exc)
 
         if log_id is not None:
             log_scrape_failure(log_id, str(exc), traceback_str)
