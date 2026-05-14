@@ -1,6 +1,6 @@
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from fastapi import APIRouter,Depends,HTTPException,Request
 from fastapi_pagination import Page,Params
@@ -94,8 +94,37 @@ async def get_categories(
    request: Request,
   db:AsyncSession = Depends(get_db)
 ):
+  # Query categories with job counts
+  # LEFT JOIN jobs to count active jobs per category
+  stmt = select(
+      Category.id,
+      Category.name,
+      Category.slug,
+      Category.description,
+      func.count(Job.id).label("job_count")
+  ).outerjoin(
+      Job,
+      (Job.category_id == Category.id) & (Job.is_active == True)
+  ).group_by(
+      Category.id,
+      Category.name,
+      Category.slug,
+      Category.description
+  )
   
-  result = await db.execute(
-    select(Category)
+  result = await db.execute(stmt)
+  
+  # Convert rows to CategoryResponse objects
+  categories = []
+  for row in result.all():
+      categories.append(
+          CategoryResponse(
+              id=row.id,
+              name=row.name,
+              slug=row.slug,
+              description=row.description,
+              job_count=row.job_count or 0
+          )
       )
-  return result.scalars().all()
+  
+  return categories

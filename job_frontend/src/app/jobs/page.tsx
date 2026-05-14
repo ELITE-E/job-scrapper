@@ -9,6 +9,7 @@ import { PaginationBar } from "@/components/common/PaginationBar";
 import { ErrorState } from "@/components/common/ErrorState";
 import { EmptyState } from "@/components/common/EmptyState";
 import { SearchBar } from "@/components/common/SearchBar";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -77,6 +78,19 @@ export default function JobsPage() {
 
   return (
     <div className="container mx-auto px-4 py-6">
+      {/* Breadcrumbs */}
+      <Breadcrumbs />
+
+      {/* Navigation: Browse Categories link */}
+      <div className="mb-4">
+        <a
+          href="/categories"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          ← Browse Categories
+        </a>
+      </div>
+
       {/* Search Bar - full width on mobile, centered on desktop */}
       <div className="max-w-2xl mx-auto mb-6">
         <SearchBar

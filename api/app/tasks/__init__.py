@@ -127,3 +127,8 @@ def scrape_jobs_task(self, triggered_by="beat"):
                 redis_client.delete("scrape_lock")
             except Exception:
                 logger.warning("[scrape_jobs_task] Failed to release lock")
+
+
+# Import staleness task to register it with Celery
+
+from app.tasks.staleness import mark_stale_jobs_task  #noqa:F401 E402  

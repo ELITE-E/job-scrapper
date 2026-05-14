@@ -6,6 +6,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import ErrorState from "@/components/common/ErrorState";
 
 export default function CategoriesPage() {
@@ -38,6 +39,9 @@ export default function CategoriesPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Breadcrumbs */}
+      <Breadcrumbs />
+
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Categories</h1>

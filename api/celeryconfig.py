@@ -32,4 +32,10 @@ beat_schedule = {
 		#"schedule": crontab(minute=0, hour="*/6"),
 		"schedule": crontab(minute="*/2"),
 	},
+	# Mark stale jobs as inactive daily at 3 AM UTC
+	"mark-stale-jobs-daily": {
+		"task": "app.tasks.mark_stale_jobs_task",
+		"schedule": crontab(minute=0, hour=3),  # 3 AM UTC
+		"kwargs": {"stale_days": 30, "triggered_by": "beat"},
+	},
 }

@@ -3,7 +3,7 @@ from typing import List ,Tuple
 import logging
 
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Job, Category,Company
@@ -72,70 +72,96 @@ async def persist_jobs(
         session:AsyncSession,)->Tuple[int,int]:
     if not jobs:
         return (0,0)
-    new_jobs=[]
-    new_count= 0
+    
+    new_count = 0
     updated_count = 0
-
 
     try:
         result= await session.execute(select(Category.id,Category.slug))
         category_map = {slug:id for id,slug in result.all()}
 
-        for job in jobs:
+        # Get the "other" category ID for fallback
+        other_category_id = category_map.get("other")
 
-        #Resolve company FK
+        for job in jobs:
+            # Resolve company FK
             company_id = None
             if job.company:
                 company_id = await find_or_create_company(job.company,session=session)
-        #Job ORM obj
-            db_job=Job(
-                title=job.title,
-                description=job.description,
-                job_url=job.job_url,
-
-                job_url_hash=job.job_url_hash,
-                job_type=job.job_type,
-                source_site=job.source_site,
-
-                location_city=job.location_city,
-                location_state=job.location_state,
-                location_country=job.location_country,
-
-                salary_min=job.salary_min,
-                salary_max=job.salary_max,
-                salary_currency=job.salary_currency,
-
-                salary_interval=job.salary_interval,
-
-                date_posted=job.date_posted,
-
-                extras=job.extras,
-
-                company_id=company_id,
-
-        )
             
-            #Category resolution
+            # Check if job already exists by job_url_hash
+            existing_job_stmt = select(Job.id).where(Job.job_url_hash == job.job_url_hash)
+            existing_result = await session.execute(existing_job_stmt)
+            existing_job_id = existing_result.scalar_one_or_none()
+
+            # Resolve category
+            category_id = None
             if job.category_slug:
                 category_id = category_map.get(job.category_slug)
-
-                if category_id:
-                    db_job.category_id = category_id
-                else:
+                if not category_id:
+                    # Use "other" category as fallback if available
+                    category_id = other_category_id
                     logger.warning(
-                        f"Unknown category slug : {job.category_slug}"
+                        f"Unknown category slug '{job.category_slug}' for job {job.job_url_hash}. Using 'other' category."
                     )
-            new_jobs.append(db_job)
-
-        #Bulk insert
-        session.add_all(new_jobs)
+            
+            if existing_job_id:
+                # UPDATE: Job already exists, update mutable fields
+                update_stmt = (
+                    update(Job)
+                    .where(Job.id == existing_job_id)
+                    .values(
+                        title=job.title,
+                        description=job.description,
+                        job_url=job.job_url,
+                        job_type=job.job_type,
+                        location_city=job.location_city,
+                        location_state=job.location_state,
+                        location_country=job.location_country,
+                        salary_min=job.salary_min,
+                        salary_max=job.salary_max,
+                        salary_currency=job.salary_currency,
+                        salary_interval=job.salary_interval,
+                        date_posted=job.date_posted,
+                        extras=job.extras,
+                        company_id=company_id,
+                        category_id=category_id,
+                        is_active=True,  # Re-activate if was marked inactive
+                    )
+                )
+                await session.execute(update_stmt)
+                updated_count += 1
+                logger.debug(f"Updated existing job: {job.job_url_hash}")
+            else:
+                # INSERT: New job
+                db_job = Job(
+                    title=job.title,
+                    description=job.description,
+                    job_url=job.job_url,
+                    job_url_hash=job.job_url_hash,
+                    job_type=job.job_type,
+                    source_site=job.source_site,
+                    location_city=job.location_city,
+                    location_state=job.location_state,
+                    location_country=job.location_country,
+                    salary_min=job.salary_min,
+                    salary_max=job.salary_max,
+                    salary_currency=job.salary_currency,
+                    salary_interval=job.salary_interval,
+                    date_posted=job.date_posted,
+                    extras=job.extras,
+                    company_id=company_id,
+                    category_id=category_id,
+                    is_active=True,
+                )
+                session.add(db_job)
+                new_count += 1
+                logger.debug(f"Inserted new job: {job.job_url_hash}")
 
         await session.commit()
-
-        new_count = len(new_jobs)
 
     except Exception as e:
         await session.rollback()
         raise e
 
-    return (new_count,updated_count)
+    return (new_count, updated_count)

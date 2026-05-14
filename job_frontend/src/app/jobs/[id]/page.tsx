@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin } from "lucide-react";
 import { formatSalary } from "@/lib/utils";
 import { useJobDetail } from "@/hooks/useJobDetail";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import ErrorState from "@/components/common/ErrorState";
 
 export default function JobDetailPage() {
@@ -70,9 +71,13 @@ export default function JobDetailPage() {
     <div>
       <div className="bg-muted/50 py-8 px-4">
         <div className="max-w-7xl mx-auto space-y-4">
+          {/* Breadcrumbs */}
+          <Breadcrumbs />
+
+          {/* Back to Jobs link */}
           <Link
             href="/jobs"
-            className="text-sm text-muted-foreground hover:underline"
+            className="text-sm text-muted-foreground hover:underline inline-block"
           >
             ← Back to Jobs
           </Link>

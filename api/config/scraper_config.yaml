@@ -81,9 +81,9 @@ sites:
     location:
       - { name: "United States", code: "USA" }
       - { name: "Kenya", code: "KEN" }
+      - { name: "Japan", code: "JPN" }
     rate_limit: 30
     respect_robots_txt: true
-      - { name: "Japan", code: "JPN" }
     results_wanted: 50
 
   - name: "glassdoor"
@@ -94,8 +94,8 @@ sites:
       - "machine learning engineer"
     location:
       - { name: "South Africa", code: "ZAF" }
-      - { name: "Australia", c
+      - { name: "Australia", code: "AUS" }
     rate_limit: 25
-    respect_robots_txt: trueode: "AUS" }
+    respect_robots_txt: true
     results_wanted: 40
     delay_between_searches: 10

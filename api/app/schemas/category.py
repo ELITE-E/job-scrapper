@@ -3,7 +3,7 @@ import uuid
 from typing import Optional
 class CategoryResponse(BaseModel):
 
-    uuid.UUID
+    id: uuid.UUID
     name: str
     slug: str
     description:Optional[str] = None
